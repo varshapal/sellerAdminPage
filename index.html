@@ -13,103 +13,111 @@
         <input type="text" name="product" id="productName">
         <button>submit</button>
     </form>
+    <h2>Product</h2>
     <ul id="listOfProducts"></ul>
 
-    <label id="totalcost">Total cost:</label>
+    <h4>Total cost:Rs <span id="totalcost">0</span></h4>
     
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script>
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
-<script>
-
-function saveToCloud(event) {
-    event.preventDefault();
-    const sellingPrice = event.target.price.value;
-    const productName = event.target.product.value;
-    //const total = event.target.price.value;
+    function saveToCloud(event) {
+        event.preventDefault();
+        const sellingPrice = event.target.price.value;
+        const productName = event.target.product.value;
+    
 
     const obj = {sellingPrice, productName}
 
     //Post Data to server
     
-    axios.post("https://crudcrud.com/api/ff5a5b01e6974722892442a1cdd374aa/products", obj)
+    axios.post("https://crudcrud.com/api/1358c3ecd7444c45bdf0b1921f054a3b/products", obj)
     .then((response) =>
     {
-        
         //console.log(response.data);
         dataonscreen(response.data);
-        var t = document.getElementById('totalcost');
-        var child = document.getElementById('sellingPrice').value;
-        t.innerHTML = t.innerHTML + child;
-        
-        
+        updateTotalCost(parseInt(response.data.sellingPrice)); //updateTotalCost(parseInt(obj.sellingPrice));
     })
     .catch((err) => {
         console.log(err);
     })
 }
  
-function dataonscreen(product) {
-    const parentNode = document.getElementById('listOfProducts');
-    const ChildNode = `<li id=${product._id}>${product.sellingPrice} - ${product.productName}
-    <button onclick = deleteProduct('${product._id}')>DeleteProduct</button>    
-    
-    </li>`
-    
+    function dataonscreen(product) {
+        const parentNode = document.getElementById('listOfProducts');
+        const ChildNode = `<li id=${product._id}>${product.sellingPrice} - ${product.productName}
+        <button onclick = deleteProduct('${product._id}')>DeleteProduct</button></li>`
+        parentNode.innerHTML = parentNode.innerHTML + ChildNode;
+    }
 
-    parentNode.innerHTML = parentNode.innerHTML + ChildNode;
 
-    
- }
+    //Get Data
 
- //Get Data
-
- window.addEventListener("DOMContentLoaded", () => {
-    axios.get("https://crudcrud.com/api/ff5a5b01e6974722892442a1cdd374aa/products")
-    .then((response) => {
-        //console.log(response.data);
-        for(let i=0;i<response.data.length;i++) {
-            dataonscreen(response.data[i]);
-            
-        }
+    window.addEventListener("DOMContentLoaded", () => {
+        axios.get("https://crudcrud.com/api/1358c3ecd7444c45bdf0b1921f054a3b/products")
+        .then((response) => {
+            //console.log(response.data);
+            var total=0;
+            for(let i=0;i<response.data.length;i++) {
+                dataonscreen(response.data[i]);
+                updateTotalCost(parseInt(response.data[i].sellingPrice)); 
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        })
     })
-    .catch((err) => {
-        console.log(err);
-    })
- })
 
-//Delete product
-function deleteProduct(productId) {
-    axios.delete(`https://crudcrud.com/api/ff5a5b01e6974722892442a1cdd374aa/products/${productId}`)
-    .then((response) => {
-        removeProductFromScreen(productId);
-        var t = document.getElementById('totalcost');
-        var child = document.getElementById('sellingPrice').value;
+
+    //Delete product
+    
+    function deleteProduct(productId) {
+        axios.get(`https://crudcrud.com/api/1358c3ecd7444c45bdf0b1921f054a3b/products/${productId}`)
+        .then((response) => {
+            updateTotalCostAfterDelete(response.data.sellingPrice);
+        })
+
+        axios.delete(`https://crudcrud.com/api/1358c3ecd7444c45bdf0b1921f054a3b/products/${productId}`)
+        .then((response) => {
+            // console.log(response.data);
+            removeProductFromScreen(productId);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+    }
+
+
+    function removeProductFromScreen(productId) {
+        let parentNode = document.getElementById('listOfProducts');
+        const removeChildNode = document.getElementById(productId);
+        parentNode.removeChild(removeChildNode);
+    }
+
+    // find total amount
+
+    let total = 0;
+    let totalAmountEl = document.getElementById('totalcost');
+    function updateTotalCost(price) 
+    {
+        total += price;
+        totalAmountEl.textContent = total;
+    }
+
+    //find total amount after delete the item
+
+    function updateTotalCostAfterDelete(price) 
+    {
+        total -= price;
+        totalAmountEl.textContent = total;
+    }
+
         
-        t.removeChild(child);
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-}
-
-
-function removeProductFromScreen(productId) {
-    let parentNode = document.getElementById('listOfProducts');
-    const removeChildNode = document.getElementById(productId);
-    parentNode.removeChild(removeChildNode);
-}
-
-function totalCost(productId) {
-    axios.get(`https://crudcrud.com/api/ff5a5b01e6974722892442a1cdd374aa/products/${productId}`)
-    .then((response) => {
-        for(var i=0;i<response.data.length;i++) {
-            console.log(response.data.sellingPrice);
-        }
         
-    })
-}
+    
+
+
 
 
 </script>
